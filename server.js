@@ -6,10 +6,10 @@ const sqlite3 = require("sqlite3").verbose();
 const multer = require("multer");
 
 const app = express();
-const PORT = 3000;
 
 // ---------- DATABASE SETUP ----------
-const dbPath = path.join(__dirname, "hostel.db");
+const DATA_DIR = process.env.DATA_DIR || __dirname;
+const dbPath = path.join(DATA_DIR, "hostel.db");
 const db = new sqlite3.Database(dbPath);
 
 // Helpers (SQLite)
@@ -151,12 +151,14 @@ db.serialize(() => {
     }
   })();
 });
-
 // ---------- FILE UPLOAD (PHOTOS) ----------
-const uploadFolder = path.join(__dirname, "public", "uploads");
+const uploadFolder = path.join(process.env.DATA_DIR || __dirname, "uploads");
 try {
   fs.mkdirSync(uploadFolder, { recursive: true });
 } catch (_) {}
+
+// ✅ ADD THIS LINE HERE
+app.use("/uploads", express.static(uploadFolder));
 
 const storage = multer.diskStorage({
   destination: (_, __, cb) => cb(null, uploadFolder),
@@ -167,6 +169,7 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
+
 
 // ---------- MIDDLEWARE ----------
 app.use(express.json());
@@ -838,5 +841,6 @@ app.get("/api/rooms/:room/monthly-account", async (req, res) => {
 // ---------- START SERVER ----------
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
+
