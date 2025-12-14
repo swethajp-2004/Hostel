@@ -1,16 +1,29 @@
-// server.js
+// server.js (Postgres only - for Render + Supabase)
+// Stores student details in Postgres (persistent). No image storing.
+
 const express = require("express");
 const path = require("path");
-const fs = require("fs"); // (not required now, but kept safe)
-const multer = require("multer");
 const { Pool } = require("pg");
 
 const app = express();
 
-// ---------- POSTGRES SETUP ----------
+// ---------- MIDDLEWARE ----------
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+
+// ---------- POSTGRES CONNECTION ----------
+if (!process.env.DATABASE_URL) {
+  console.error("❌ DATABASE_URL is missing in Environment Variables");
+}
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+  ssl: { rejectUnauthorized: false }, // needed for Supabase / hosted PG
+});
+
+// Prevent crash on idle connection errors
+pool.on("error", (err) => {
+  console.error("Unexpected PG pool error:", err);
 });
 
 // ---------- HELPERS ----------
@@ -18,10 +31,12 @@ async function runAsync(sql, params = []) {
   const r = await pool.query(sql, params);
   return { rowCount: r.rowCount, rows: r.rows };
 }
+
 async function getAsync(sql, params = []) {
   const r = await pool.query(sql, params);
   return r.rows[0] || null;
 }
+
 async function allAsync(sql, params = []) {
   const r = await pool.query(sql, params);
   return r.rows;
@@ -31,7 +46,7 @@ function nowIso() {
   return new Date().toISOString();
 }
 
-// ---------- DB INIT (CREATE TABLES) ----------
+// ---------- DB INIT (CREATE TABLES + INDEXES) ----------
 async function initDb() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS students (
@@ -101,7 +116,7 @@ async function initDb() {
     );
   `);
 
-  // Indexes (IF NOT EXISTS supported on modern Postgres)
+  // Indexes
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_students_hostel ON students(hostel_code)`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_students_room ON students(hostel_code, room_number)`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_attendance_student ON attendance(student_id, date)`);
@@ -109,15 +124,6 @@ async function initDb() {
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_monthly_accounts_student ON monthly_accounts(student_id, date)`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_monthly_accounts_room ON monthly_accounts(hostel_code, room_number, date)`);
 }
-
-// ---------- FILE UPLOAD (DISABLED STORAGE) ----------
-// You said: "I don't want any images to be stored, but I want details stored."
-// So we accept multipart/form-data, but DO NOT save photo to disk.
-const upload = multer({ storage: multer.memoryStorage() });
-
-// ---------- MIDDLEWARE ----------
-app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
 
 // ---------- ROUTES ----------
 
@@ -134,7 +140,7 @@ app.get("/api/students/list", async (req, res) => {
       SELECT id, name, room_number
       FROM students
       WHERE hostel_code = $1 AND COALESCE(is_deleted, 0) = 0
-      ORDER BY lower(name)
+      ORDER BY LOWER(name)
       `,
       [hostel]
     );
@@ -156,7 +162,7 @@ app.get("/api/students/old", async (req, res) => {
       SELECT id, name, room_number, room_type, deleted_at
       FROM students
       WHERE hostel_code = $1 AND COALESCE(is_deleted, 0) = 1
-      ORDER BY deleted_at DESC NULLS LAST, lower(name)
+      ORDER BY deleted_at DESC NULLS LAST, LOWER(name)
       `,
       [hostel]
     );
@@ -171,7 +177,10 @@ app.get("/api/students/old", async (req, res) => {
 app.post("/api/students/:id/restore", async (req, res) => {
   const id = Number(req.params.id);
   try {
-    const r = await runAsync(`UPDATE students SET is_deleted = 0, deleted_at = NULL WHERE id = $1`, [id]);
+    const r = await runAsync(
+      `UPDATE students SET is_deleted = 0, deleted_at = NULL WHERE id = $1`,
+      [id]
+    );
     if (r.rowCount === 0) return res.json({ success: false, message: "Student not found" });
     res.json({ success: true });
   } catch (e) {
@@ -180,24 +189,30 @@ app.post("/api/students/:id/restore", async (req, res) => {
   }
 });
 
-// ✅ PERMANENT DELETE (Old Students) — cannot undo
-// Also deletes related rows (no photo deletion because we do not store photos)
+// PERMANENT DELETE (cannot undo) + deletes related rows
 app.delete("/api/students/:id/permanent", async (req, res) => {
   const id = Number(req.params.id);
 
+  const client = await pool.connect();
   try {
-    await runAsync(`DELETE FROM attendance WHERE student_id = $1`, [id]);
-    await runAsync(`DELETE FROM extra_food WHERE student_id = $1`, [id]);
-    await runAsync(`DELETE FROM rent_payments WHERE student_id = $1`, [id]);
-    await runAsync(`DELETE FROM monthly_accounts WHERE student_id = $1`, [id]);
+    await client.query("BEGIN");
 
-    const r = await runAsync(`DELETE FROM students WHERE id = $1`, [id]);
-    if (r.rowCount === 0) return res.json({ success: false, message: "Student not found" });
+    await client.query(`DELETE FROM attendance WHERE student_id = $1`, [id]);
+    await client.query(`DELETE FROM extra_food WHERE student_id = $1`, [id]);
+    await client.query(`DELETE FROM rent_payments WHERE student_id = $1`, [id]);
+    await client.query(`DELETE FROM monthly_accounts WHERE student_id = $1`, [id]);
 
+    const del = await client.query(`DELETE FROM students WHERE id = $1`, [id]);
+    await client.query("COMMIT");
+
+    if (del.rowCount === 0) return res.json({ success: false, message: "Student not found" });
     res.json({ success: true });
   } catch (e) {
+    await client.query("ROLLBACK");
     console.error(e);
     res.status(500).json({ success: false, message: "DB error permanent deleting student" });
+  } finally {
+    client.release();
   }
 });
 
@@ -212,7 +227,7 @@ app.get("/api/students/by-roomtype", async (req, res) => {
       SELECT id, name, room_number, room_type
       FROM students
       WHERE hostel_code = $1 AND room_type = $2 AND COALESCE(is_deleted, 0) = 0
-      ORDER BY lower(name)
+      ORDER BY LOWER(name)
       `,
       [hostel, roomType]
     );
@@ -234,7 +249,7 @@ app.get("/api/students/by-room", async (req, res) => {
       SELECT id, name, room_number, room_type
       FROM students
       WHERE hostel_code = $1 AND room_number = $2 AND COALESCE(is_deleted, 0) = 0
-      ORDER BY lower(name)
+      ORDER BY LOWER(name)
       `,
       [hostel, room]
     );
@@ -257,12 +272,11 @@ app.get("/api/students", async (req, res) => {
       FROM students
       WHERE hostel_code = $1
         AND COALESCE(is_deleted, 0) = 0
-        AND lower(name) = lower($2)
+        AND LOWER(name) = LOWER($2)
       LIMIT 1
       `,
       [hostel, name]
     );
-
     if (!row) return res.json({ success: false, message: "No student found" });
     res.json({ success: true, student: row });
   } catch (e) {
@@ -289,8 +303,8 @@ app.get("/api/students/:id", async (req, res) => {
   }
 });
 
-// Add new student (photo accepted but NOT stored)
-app.post("/api/students", upload.single("photo"), async (req, res) => {
+// Add new student (NO PHOTO stored)
+app.post("/api/students", async (req, res) => {
   try {
     const s = req.body;
 
@@ -300,27 +314,26 @@ app.post("/api/students", upload.single("photo"), async (req, res) => {
         hostel_code, name, address, course, phone,
         room_number, room_type, food_option,
         monthly_rent, advance_paid, advance_remaining,
-        date_join, date_leave, photo_path,
-        is_deleted, deleted_at
+        date_join, date_leave, photo_path
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,0,NULL)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
       RETURNING *
       `,
       [
-        s.hostel_code || "",
-        s.name || "",
-        s.address || "",
-        s.course || "",
-        s.phone || "",
-        s.room_number || "",
-        s.room_type || "",
-        s.food_option || "",
+        s.hostel_code,
+        s.name,
+        s.address,
+        s.course,
+        s.phone,
+        s.room_number,
+        s.room_type,
+        s.food_option,
         parseInt(s.monthly_rent || 0, 10),
         parseInt(s.advance_paid || 0, 10),
         parseInt(s.advance_remaining || 0, 10),
         s.date_join || "",
         s.date_leave || "",
-        null, // photo_path disabled
+        null, // no photo
       ]
     );
 
@@ -331,45 +344,44 @@ app.post("/api/students", upload.single("photo"), async (req, res) => {
   }
 });
 
-// Update student details (photo accepted but NOT stored)
-app.put("/api/students/:id", upload.single("photo"), async (req, res) => {
+// Update student details (NO PHOTO stored)
+app.put("/api/students/:id", async (req, res) => {
   const id = Number(req.params.id);
   const s = req.body;
 
   try {
-    const r = await runAsync(
+    const r = await pool.query(
       `
       UPDATE students
       SET hostel_code = $1, name = $2, address = $3, course = $4, phone = $5,
           room_number = $6, room_type = $7, food_option = $8,
           monthly_rent = $9, advance_paid = $10, advance_remaining = $11,
-          date_join = $12, date_leave = $13,
-          photo_path = $14
-      WHERE id = $15
+          date_join = $12, date_leave = $13
+      WHERE id = $14
+      RETURNING *
       `,
       [
-        s.hostel_code || "",
-        s.name || "",
-        s.address || "",
-        s.course || "",
-        s.phone || "",
-        s.room_number || "",
-        s.room_type || "",
-        s.food_option || "",
+        s.hostel_code,
+        s.name,
+        s.address,
+        s.course,
+        s.phone,
+        s.room_number,
+        s.room_type,
+        s.food_option,
         parseInt(s.monthly_rent || 0, 10),
         parseInt(s.advance_paid || 0, 10),
         parseInt(s.advance_remaining || 0, 10),
         s.date_join || "",
         s.date_leave || "",
-        null, // photo_path disabled
         id,
       ]
     );
 
     if (r.rowCount === 0) return res.json({ success: false, message: "Student not found" });
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
+    res.json({ success: true, student: r.rows[0] });
+  } catch (e) {
+    console.error(e);
     res.status(500).json({ success: false, message: "DB error on update" });
   }
 });
@@ -410,7 +422,7 @@ app.post("/api/students/:id/rent", async (req, res) => {
     const r = await pool.query(
       `
       INSERT INTO rent_payments (student_id, date, rent_paid, remaining)
-      VALUES ($1, $2, $3, $4)
+      VALUES ($1,$2,$3,$4)
       RETURNING *
       `,
       [studentId, date, parseInt(rent_paid || 0, 10), parseInt(remaining || 0, 10)]
@@ -427,16 +439,17 @@ app.put("/api/rent_payments/:id", async (req, res) => {
   const { date = "", rent_paid = 0, remaining = 0 } = req.body;
 
   try {
-    const r = await runAsync(
+    const r = await pool.query(
       `
       UPDATE rent_payments
       SET date = $1, rent_paid = $2, remaining = $3
       WHERE id = $4
+      RETURNING *
       `,
       [date, parseInt(rent_paid || 0, 10), parseInt(remaining || 0, 10), id]
     );
     if (r.rowCount === 0) return res.json({ success: false, message: "Rent entry not found" });
-    res.json({ success: true });
+    res.json({ success: true, entry: r.rows[0] });
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, message: "DB error updating rent" });
@@ -475,7 +488,7 @@ app.post("/api/students/:id/extra-food", async (req, res) => {
     const r = await pool.query(
       `
       INSERT INTO extra_food (student_id, date, amount, remaining)
-      VALUES ($1, $2, $3, $4)
+      VALUES ($1,$2,$3,$4)
       RETURNING *
       `,
       [studentId, date, parseInt(amount || 0, 10), parseInt(remaining || 0, 10)]
@@ -492,16 +505,17 @@ app.put("/api/extra_food/:id", async (req, res) => {
   const { date = "", amount = 0, remaining = 0 } = req.body;
 
   try {
-    const r = await runAsync(
+    const r = await pool.query(
       `
       UPDATE extra_food
       SET date = $1, amount = $2, remaining = $3
       WHERE id = $4
+      RETURNING *
       `,
       [date, parseInt(amount || 0, 10), parseInt(remaining || 0, 10), id]
     );
     if (r.rowCount === 0) return res.json({ success: false, message: "Extra food entry not found" });
-    res.json({ success: true });
+    res.json({ success: true, entry: r.rows[0] });
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, message: "DB error updating extra food" });
@@ -522,7 +536,7 @@ app.delete("/api/extra_food/:id", async (req, res) => {
 
 // -------------------- ATTENDANCE --------------------
 app.post("/api/rooms/:room/attendance", async (req, res) => {
-  const room = String(req.params.room || "").trim();
+  const room = String(req.params.room || "");
   const { hostel_code, date = "", absent_ids = [] } = req.body;
 
   if (!hostel_code) return res.status(400).json({ success: false, message: "Missing hostel_code" });
@@ -545,12 +559,14 @@ app.post("/api/rooms/:room/attendance", async (req, res) => {
         [hostel_code, date, room, s.id]
       );
 
-      if (existing) await runAsync(`UPDATE attendance SET status=$1 WHERE id=$2`, [status, existing.id]);
-      else
+      if (existing) {
+        await runAsync(`UPDATE attendance SET status=$1 WHERE id=$2`, [status, existing.id]);
+      } else {
         await runAsync(
           `INSERT INTO attendance (hostel_code, date, room_number, student_id, status) VALUES ($1,$2,$3,$4,$5)`,
           [hostel_code, date, room, s.id, status]
         );
+      }
     }
 
     res.json({ success: true, total_students: students.length });
@@ -561,7 +577,7 @@ app.post("/api/rooms/:room/attendance", async (req, res) => {
 });
 
 app.get("/api/rooms/:room/attendance", async (req, res) => {
-  const room = String(req.params.room || "").trim();
+  const room = String(req.params.room || "");
   const { hostel, date } = req.query;
   if (!hostel || !date) return res.status(400).json({ success: false, message: "Missing hostel or date" });
 
@@ -572,7 +588,7 @@ app.get("/api/rooms/:room/attendance", async (req, res) => {
       FROM attendance a
       JOIN students s ON s.id = a.student_id
       WHERE a.hostel_code=$1 AND a.room_number=$2 AND a.date=$3
-      ORDER BY lower(s.name)
+      ORDER BY LOWER(s.name)
       `,
       [hostel, room, date]
     );
@@ -613,12 +629,17 @@ app.put("/api/attendance/:id", async (req, res) => {
   }
 
   try {
-    const r = await runAsync(
-      `UPDATE attendance SET date = $1, room_number = $2, status = $3 WHERE id = $4`,
+    const r = await pool.query(
+      `
+      UPDATE attendance
+      SET date=$1, room_number=$2, status=$3
+      WHERE id=$4
+      RETURNING *
+      `,
       [date, room_number, statusClean, id]
     );
     if (r.rowCount === 0) return res.json({ success: false, message: "Attendance row not found" });
-    res.json({ success: true });
+    res.json({ success: true, entry: r.rows[0] });
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, message: "DB error updating attendance" });
@@ -629,7 +650,7 @@ app.put("/api/attendance/:id", async (req, res) => {
 app.delete("/api/attendance/:id", async (req, res) => {
   const id = Number(req.params.id);
   try {
-    const r = await runAsync(`DELETE FROM attendance WHERE id = $1`, [id]);
+    const r = await runAsync(`DELETE FROM attendance WHERE id=$1`, [id]);
     if (r.rowCount === 0) return res.json({ success: false, message: "Attendance row not found" });
     res.json({ success: true });
   } catch (e) {
@@ -675,7 +696,7 @@ app.post("/api/students/:id/monthly-account", async (req, res) => {
       INSERT INTO monthly_accounts
       (hostel_code, student_id, date, room_number, rent_paid, rent_remaining, eb_share, eb_paid, eb_remaining)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-      RETURNING id
+      RETURNING *
       `,
       [
         hostel_code,
@@ -689,7 +710,7 @@ app.post("/api/students/:id/monthly-account", async (req, res) => {
         parseInt(eb_remaining || 0, 10),
       ]
     );
-    res.json({ success: true, entry: { id: r.rows[0].id } });
+    res.json({ success: true, entry: r.rows[0] });
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, message: "DB error adding monthly account" });
@@ -709,11 +730,12 @@ app.put("/api/monthly_accounts/:id", async (req, res) => {
   } = req.body;
 
   try {
-    const r = await runAsync(
+    const r = await pool.query(
       `
       UPDATE monthly_accounts
       SET date=$1, room_number=$2, rent_paid=$3, rent_remaining=$4, eb_share=$5, eb_paid=$6, eb_remaining=$7
       WHERE id=$8
+      RETURNING *
       `,
       [
         date,
@@ -727,7 +749,7 @@ app.put("/api/monthly_accounts/:id", async (req, res) => {
       ]
     );
     if (r.rowCount === 0) return res.json({ success: false, message: "Monthly entry not found" });
-    res.json({ success: true });
+    res.json({ success: true, entry: r.rows[0] });
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, message: "DB error updating monthly account" });
@@ -747,7 +769,7 @@ app.delete("/api/monthly_accounts/:id", async (req, res) => {
 });
 
 app.post("/api/rooms/:room/eb-batch", async (req, res) => {
-  const room = String(req.params.room || "").trim();
+  const room = String(req.params.room || "");
   const { hostel_code, date = "", eb_total = 0 } = req.body;
 
   if (!hostel_code) return res.status(400).json({ success: false, message: "Missing hostel_code" });
@@ -800,7 +822,7 @@ app.post("/api/rooms/:room/eb-batch", async (req, res) => {
 });
 
 app.get("/api/rooms/:room/monthly-account", async (req, res) => {
-  const room = String(req.params.room || "").trim();
+  const room = String(req.params.room || "");
   const { hostel, date } = req.query;
 
   if (!hostel) return res.status(400).json({ success: false, message: "Missing hostel" });
@@ -826,7 +848,7 @@ app.get("/api/rooms/:room/monthly-account", async (req, res) => {
       LEFT JOIN monthly_accounts ma
         ON ma.student_id = s.id AND ma.hostel_code = s.hostel_code AND ma.date = $1
       WHERE s.hostel_code = $2 AND s.room_number = $3 AND COALESCE(s.is_deleted,0)=0
-      ORDER BY lower(s.name)
+      ORDER BY LOWER(s.name)
       `,
       [date, hostel, room]
     );
