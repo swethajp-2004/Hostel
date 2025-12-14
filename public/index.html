@@ -1,0 +1,2278 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hostel Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ✅ CSS moved to separate file -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <!-- LOGIN VIEW -->
+    <div id="login-view" class="view active">
+      <div class="login-wrapper">
+        <div class="card">
+          <h2>Hostel Admin Login</h2>
+          <p class="sub-text">Private app – only hostel admins can log in.</p>
+
+          <form id="login-form">
+            <div class="field">
+              <label>Username</label>
+              <input
+                type="text"
+                id="login-username"
+                autocomplete="username"
+                required
+              />
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <input
+                type="password"
+                id="login-password"
+                autocomplete="current-password"
+                required
+              />
+            </div>
+            <button type="submit" style="margin-top: 14px">Login</button>
+            <div id="login-error" class="error"></div>
+          </form>
+
+          <div class="hint-box">
+            <div>Use one of these logins:</div>
+            <ul style="margin: 4px 0 0 18px; padding: 0">
+              <li>hema / hema – Hema Hostel</li>
+              <li>jpg / jpg – JPG Main Hostel</li>
+              <li>house / house – House Hostel</li>
+              <li>market / market – Market Hostel</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- APP VIEW -->
+    <div id="app-view" class="view">
+      <div id="top-bar">
+        <div>
+          <div id="top-title">Hostel Admin</div>
+          <div id="top-sub">
+            Logged into: <span id="current-hostel-name"></span>
+            &nbsp;•&nbsp;<span id="current-hostel-code" style="opacity: 0.8"></span>
+          </div>
+        </div>
+        <button id="logout-btn" class="secondary">Logout</button>
+      </div>
+
+      <div id="content">
+        <!-- HOME / DASHBOARD -->
+        <div id="home-section" class="app-section active">
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <h3>Dashboard</h3>
+                <p class="sub-text" style="margin-bottom: 0">
+                  Choose what you want to do in this hostel.
+                </p>
+              </div>
+            </div>
+
+            <div class="button-grid" style="margin-top: 8px">
+              <button id="btn-home-add" type="button" class="big-btn">
+                ➕ Add New Hosteler
+              </button>
+
+              <button id="btn-home-details" type="button" class="big-btn">
+                📄 Hosteler Details
+              </button>
+
+              <button id="btn-home-delete" type="button" class="big-btn">
+                🗑 Delete Hosteler
+              </button>
+
+              <button id="btn-home-ac" type="button" class="big-btn">
+                ❄️ AC Hostelers
+              </button>
+
+              <button id="btn-home-nonac" type="button" class="big-btn">
+                🌡 Non-AC Hostelers
+              </button>
+
+              <button id="btn-home-roomwise" type="button" class="big-btn">
+                🛏 Room-wise Hostelers
+              </button>
+
+              <!-- ✅ NEW -->
+              <button id="btn-home-oldstudents" type="button" class="big-btn">
+                📦 Old Students
+              </button>
+
+              <!-- ✅ NEW -->
+              <button id="btn-home-attendance" type="button" class="big-btn">
+                ✅ Attendance (Room-wise)
+              </button>
+
+              <!-- ✅ NEW -->
+              <button id="btn-home-room-eb" type="button" class="big-btn">
+                💡 Monthly Rent / EB (Room-wise)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADD / EDIT HOSTELER -->
+        <div id="add-section" class="app-section">
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <h3 id="add-title">Add New Hosteler</h3>
+                <p class="sub-text" style="margin-bottom: 0">
+                  Create or update a student record for this hostel.
+                </p>
+              </div>
+              <span class="pill" id="add-hostel-pill"></span>
+            </div>
+
+            <form id="add-form" enctype="multipart/form-data">
+              <div class="field">
+                <label>Student Name</label>
+                <input type="text" id="add-name" required />
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label>Phone Number</label>
+                  <input type="text" id="add-phone" />
+                </div>
+                <div class="field">
+                  <label>Course</label>
+                  <input type="text" id="add-course" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Address</label>
+                <input type="text" id="add-address" />
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label>Room Number</label>
+                  <input type="text" id="add-room" />
+                </div>
+                <div class="field">
+                  <label>Room Sharing</label>
+                  <select id="add-sharing">
+                    <option value="">Select</option>
+                    <option value="Single">Single</option>
+                    <option value="2">2 Sharing</option>
+                    <option value="3">3 Sharing</option>
+                    <option value="4">4 Sharing</option>
+                    <option value="6">6 Sharing (Non-AC)</option>
+                    <option value="8">8 Sharing (Non-AC)</option>
+                    <option value="10">10 Sharing (Non-AC)</option>
+                  </select>
+                  <small class="sub-text">6 / 8 / 10 are Non-AC only.</small>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label>AC / Non-AC</label>
+                  <select id="add-ac-type">
+                    <option value="">Select</option>
+                    <option value="AC">AC</option>
+                    <option value="Non-AC">Non-AC</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Food Type</label>
+                  <select id="add-food">
+                    <option value="">Select</option>
+                    <option value="With Food">With Food</option>
+                    <option value="Without Food">Without Food</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label>Monthly Rent Amount (₹)</label>
+                  <input type="number" id="add-rent" />
+                </div>
+                <div class="field">
+                  <label>Advance Paid (₹)</label>
+                  <input type="number" id="add-advance" />
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label>Remaining Advance (₹)</label>
+                  <input type="number" id="add-advance-rem" />
+                </div>
+                <div class="field">
+                  <label>Date of Joining</label>
+                  <input type="date" id="add-doj" />
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label>Date of Leaving</label>
+                  <input type="date" id="add-dol" />
+                </div>
+                <div class="field">
+                  <label>Photo (optional)</label>
+                  <input type="file" id="add-photo" accept="image/*" />
+                </div>
+              </div>
+
+              <div class="row-actions">
+                <button type="submit">Save Hosteler</button>
+                <button type="button" class="secondary" id="btn-add-back">
+                  ⬅ Back
+                </button>
+                <span id="add-msg"></span>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- HOSTELER DETAILS (search + view all) -->
+        <div id="details-section" class="app-section">
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <h3>Hosteler Details</h3>
+                <p class="sub-text" style="margin-bottom: 0">
+                  Search by student name or view all students in this hostel.
+                </p>
+              </div>
+              <span class="pill" id="details-hostel-pill"></span>
+            </div>
+
+            <form id="details-search-form">
+              <div class="field-row">
+                <div class="field">
+                  <label>Student Name</label>
+                  <input type="text" id="details-search-name" required />
+                </div>
+                <div class="field field-btn">
+                  <button type="submit" style="width: 100%">Search</button>
+                </div>
+              </div>
+              <div id="details-search-msg"></div>
+            </form>
+
+            <div class="row-actions">
+              <button type="button" id="btn-view-all" class="secondary">
+                👥 View All Students
+              </button>
+              <button type="button" id="btn-details-back" class="secondary">
+                ⬅ Back
+              </button>
+            </div>
+
+            <div id="all-students-container" style="margin-top: 12px"></div>
+          </div>
+        </div>
+
+        <!-- DELETE HOSTELER -->
+        <div id="delete-section" class="app-section">
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <h3>Delete Hosteler</h3>
+                <p class="sub-text" style="margin-bottom: 0">
+                  Deletes student and moves to Old Students (Undo available).
+                </p>
+              </div>
+              <span class="pill" id="delete-hostel-pill"></span>
+            </div>
+
+            <form id="delete-form">
+              <div class="field-row">
+                <div class="field">
+                  <label>Student Name</label>
+                  <input type="text" id="delete-name" required />
+                </div>
+                <div class="field field-btn">
+                  <button type="submit" class="danger" style="width: 100%">
+                    Delete
+                  </button>
+                </div>
+              </div>
+              <div id="delete-msg"></div>
+            </form>
+
+            <div style="margin-top: 10px">
+              <button type="button" id="btn-delete-back" class="secondary">
+                ⬅ Back
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- AC HOSTELERS -->
+        <div id="ac-section" class="app-section">
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <h3>AC Hostelers</h3>
+                <p class="sub-text" style="margin-bottom: 0">
+                  View names based on AC room sharing.
+                </p>
+              </div>
+              <span class="pill" id="ac-hostel-pill"></span>
+            </div>
+
+            <div class="button-grid">
+              <button type="button" class="secondary big-btn ac-btn" data-type="Single AC">
+                Single
+              </button>
+              <button type="button" class="secondary big-btn ac-btn" data-type="2-Sharing AC">
+                2 Sharing
+              </button>
+              <button type="button" class="secondary big-btn ac-btn" data-type="3-Sharing AC">
+                3 Sharing
+              </button>
+              <button type="button" class="secondary big-btn ac-btn" data-type="4-Sharing AC">
+                4 Sharing
+              </button>
+            </div>
+
+            <div id="ac-names" class="names-list"></div>
+
+            <div style="margin-top: 10px">
+              <button type="button" id="btn-ac-back" class="secondary">
+                ⬅ Back
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- NON-AC HOSTELERS -->
+        <div id="nonac-section" class="app-section">
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <h3>Non-AC Hostelers</h3>
+                <p class="sub-text" style="margin-bottom: 0">
+                  View names based on Non-AC room sharing.
+                </p>
+              </div>
+              <span class="pill" id="nonac-hostel-pill"></span>
+            </div>
+
+            <div class="button-grid">
+              <button type="button" class="secondary big-btn nonac-btn" data-type="Single Non-AC">
+                Single
+              </button>
+              <button type="button" class="secondary big-btn nonac-btn" data-type="2-Sharing Non-AC">
+                2 Sharing
+              </button>
+              <button type="button" class="secondary big-btn nonac-btn" data-type="3-Sharing Non-AC">
+                3 Sharing
+              </button>
+              <button type="button" class="secondary big-btn nonac-btn" data-type="4-Sharing Non-AC">
+                4 Sharing
+              </button>
+              <button type="button" class="secondary big-btn nonac-btn" data-type="6-Sharing Non-AC">
+                6 Sharing
+              </button>
+              <button type="button" class="secondary big-btn nonac-btn" data-type="8-Sharing Non-AC">
+                8 Sharing
+              </button>
+              <button type="button" class="secondary big-btn nonac-btn" data-type="10-Sharing Non-AC">
+                10 Sharing
+              </button>
+            </div>
+
+            <div id="nonac-names" class="names-list"></div>
+
+            <div style="margin-top: 10px">
+              <button type="button" id="btn-nonac-back" class="secondary">
+                ⬅ Back
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROOM-WISE HOSTELERS -->
+        <div id="roomwise-section" class="app-section">
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <h3>Room-wise Hostelers</h3>
+                <p class="sub-text" style="margin-bottom: 0">
+                  Enter a room number to see who is staying there.
+                </p>
+              </div>
+              <span class="pill" id="roomwise-hostel-pill"></span>
+            </div>
+
+            <form id="roomwise-form">
+              <div class="field-row">
+                <div class="field">
+                  <label>Room Number</label>
+                  <input type="text" id="roomwise-room" required />
+                </div>
+                <div class="field field-btn">
+                  <button type="submit" style="width: 100%">Search</button>
+                </div>
+              </div>
+              <div id="roomwise-msg"></div>
+            </form>
+
+            <div id="roomwise-names" class="names-list"></div>
+
+            <div style="margin-top: 10px">
+              <button type="button" id="btn-roomwise-back" class="secondary">
+                ⬅ Back
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✅ OLD STUDENTS -->
+        <div id="oldstudents-section" class="app-section">
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <h3>Old Students</h3>
+                <p class="sub-text" style="margin-bottom: 0">
+                  Deleted students are shown here. You can restore (Undo) anytime.
+                </p>
+              </div>
+              <span class="pill" id="oldstudents-hostel-pill"></span>
+            </div>
+
+            <div class="row-actions">
+              <button type="button" id="btn-oldstudents-refresh" class="secondary">
+                🔄 Refresh
+              </button>
+              <button type="button" id="btn-oldstudents-back" class="secondary">
+                ⬅ Back
+              </button>
+            </div>
+
+            <div id="oldstudents-container" style="margin-top: 12px"></div>
+          </div>
+        </div>
+
+        <!-- ✅ ATTENDANCE (ROOM-WISE) -->
+        <div id="attendance-section" class="app-section">
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <h3>Attendance (Room-wise)</h3>
+                <p class="sub-text" style="margin-bottom: 0">
+                  Select only absentees. Unselected students are automatically Present.
+                </p>
+              </div>
+              <span class="pill" id="attendance-hostel-pill"></span>
+            </div>
+
+            <form id="attendance-form">
+              <div class="field-row">
+                <div class="field">
+                  <label>Date</label>
+                  <input type="date" id="att-date" required />
+                </div>
+                <div class="field">
+                  <label>Room Number</label>
+                  <input type="text" id="att-room" required />
+                </div>
+                <div class="field field-btn">
+                  <button type="button" id="btn-att-load" style="width:100%">Load</button>
+                </div>
+              </div>
+
+              <div id="att-msg"></div>
+
+              <div id="att-students" style="margin-top: 10px"></div>
+
+              <div class="row-actions" style="margin-top: 12px">
+                <button type="submit">Submit Attendance</button>
+                <button type="button" id="btn-att-back" class="secondary">⬅ Back</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- ✅ ROOM-WISE MONTHLY RENT / EB -->
+        <div id="room-eb-section" class="app-section">
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <h3>Monthly Rent / EB (Room-wise)</h3>
+                <p class="sub-text" style="margin-bottom: 0">
+                  Enter EB total for room; it will auto-divide among students.
+                </p>
+              </div>
+              <span class="pill" id="room-eb-hostel-pill"></span>
+            </div>
+
+            <form id="room-eb-form">
+              <div class="field-row">
+                <div class="field">
+                  <label>Date</label>
+                  <input type="date" id="room-eb-date" required />
+                </div>
+                <div class="field">
+                  <label>Room Number</label>
+                  <input type="text" id="room-eb-room" required />
+                </div>
+                <div class="field">
+                  <label>EB Total (₹)</label>
+                  <input type="number" id="room-eb-total" required />
+                </div>
+              </div>
+
+              <div class="row-actions" style="margin-top: 12px">
+                <button type="submit">Submit EB</button>
+                <button type="button" id="btn-room-eb-back" class="secondary">⬅ Back</button>
+                <span id="room-eb-msg"></span>
+              </div>
+            </form>
+
+            <div id="room-eb-table" style="margin-top: 12px"></div>
+          </div>
+        </div>
+
+        <!-- STUDENT PROFILE -->
+        <div id="student-section" class="app-section">
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <h3 id="student-title">Student Details</h3>
+                <p class="sub-text" id="student-sub" style="margin-bottom: 0"></p>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <button type="button" id="btn-student-monthly">
+                  💰 Monthly Rent / EB
+                </button>
+
+                <button type="button" id="btn-student-extra">
+                  🍽 Extra Food
+                </button>
+
+                <button type="button" id="btn-student-attendance">
+                  ✅ Attendance Details
+                </button>
+
+                <button type="button" id="btn-student-edit" class="secondary">
+                  ✏️ Edit
+                </button>
+
+                <button type="button" id="btn-student-back" class="secondary">
+                  ⬅ Back
+                </button>
+              </div>
+            </div>
+
+            <div class="profile-layout" style="margin-top: 8px">
+              <div>
+                <div id="student-photo" class="photo-box">
+                  <div class="photo-placeholder">?</div>
+                </div>
+              </div>
+              <div class="info-grid" id="student-info"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✅ STUDENT MONTHLY RENT / EB PAGE -->
+        <div id="monthly-section" class="app-section">
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <h3>Monthly Rent / EB</h3>
+                <p class="sub-text" id="monthly-sub" style="margin-bottom: 0"></p>
+              </div>
+              <button type="button" id="btn-monthly-back" class="secondary">
+                ⬅ Back
+              </button>
+            </div>
+
+            <form id="monthly-form">
+              <div class="field-row">
+                <div class="field">
+                  <label>Date</label>
+                  <input type="date" id="monthly-date" />
+                </div>
+
+                <div class="field">
+                  <label>Rent Paid (₹)</label>
+                  <input type="number" id="monthly-rent-paid" />
+                </div>
+
+                <div class="field">
+                  <label>Rent Remaining (₹)</label>
+                  <input type="number" id="monthly-rent-rem" />
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label>EB (Calculated Share) (₹)</label>
+                  <input type="number" id="monthly-eb-share" />
+                </div>
+
+                <div class="field">
+                  <label>EB Paid (₹)</label>
+                  <input type="number" id="monthly-eb-paid" />
+                </div>
+
+                <div class="field">
+                  <label>EB Remaining (₹)</label>
+                  <input type="number" id="monthly-eb-rem" />
+                </div>
+              </div>
+
+              <div class="row-actions" style="margin-top: 12px">
+                <button type="submit">Add / Update</button>
+                <button type="button" id="btn-monthly-history" class="secondary">
+                  History
+                </button>
+                <span id="monthly-msg"></span>
+              </div>
+            </form>
+
+            <div id="monthly-history" style="margin-top: 12px"></div>
+          </div>
+        </div>
+
+        <!-- EXTRA FOOD PAGE -->
+        <div id="food-section" class="app-section">
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <h3>Extra Food</h3>
+                <p class="sub-text" id="food-sub" style="margin-bottom: 0"></p>
+              </div>
+              <button type="button" id="btn-food-back" class="secondary">
+                ⬅ Back
+              </button>
+            </div>
+
+            <form id="food-form">
+              <div class="field-row">
+                <div class="field">
+                  <label>Date</label>
+                  <input type="date" id="food-date" />
+                </div>
+                <div class="field">
+                  <label>Extra Food Amount (₹)</label>
+                  <input type="number" id="food-amount" />
+                </div>
+                <div class="field">
+                  <label>Remaining Amount (₹)</label>
+                  <input type="number" id="food-remaining" />
+                </div>
+              </div>
+
+              <div class="row-actions" style="margin-top: 12px">
+                <button type="submit">Add / Update</button>
+                <button type="button" id="btn-food-history" class="secondary">
+                  Extra Food History
+                </button>
+                <span id="food-msg"></span>
+              </div>
+            </form>
+
+            <div id="food-history" style="margin-top: 12px"></div>
+          </div>
+        </div>
+
+        <!-- ✅ STUDENT ATTENDANCE LIST -->
+        <div id="student-attendance-section" class="app-section">
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <h3>Attendance Details</h3>
+                <p class="sub-text" id="student-att-sub" style="margin-bottom: 0"></p>
+              </div>
+              <button type="button" id="btn-student-att-back" class="secondary">
+                ⬅ Back
+              </button>
+            </div>
+
+            <div id="student-att-table" style="margin-top: 10px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ---------- LOGIN ----------
+      const HOSTELS = [
+        { code: "hema", name: "Hema Hostel", username: "hema", password: "hema" },
+        { code: "jpg", name: "JPG Main Hostel", username: "jpg", password: "jpg" },
+        { code: "house", name: "House Hostel", username: "house", password: "house" },
+        { code: "market", name: "Market Hostel", username: "market", password: "market" },
+      ];
+
+      const loginForm = document.getElementById("login-form");
+      const loginError = document.getElementById("login-error");
+
+      const topHostelName = document.getElementById("current-hostel-name");
+      const topHostelCode = document.getElementById("current-hostel-code");
+      const logoutBtn = document.getElementById("logout-btn");
+
+      let currentHostelCode = null;
+      let currentHostelName = null;
+
+      let currentStudent = null;
+      let editingStudentId = null;
+      let editingFoodId = null;
+      let editingMonthlyId = null;
+      let editingAttendanceId = null;
+
+      // navigation helper
+      let lastSectionBeforeStudent = "details-section";
+
+      // ✅ NEW: monthly back should go to where user came from (student profile OR room-eb list)
+      let lastSectionBeforeMonthly = "student-section";
+
+      // ✅ NEW: remember last room-eb date/room, so monthly date auto-connect
+      let roomEbLastDate = "";
+      let roomEbLastRoom = "";
+
+      function showView(viewId) {
+        document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
+        document.getElementById(viewId).classList.add("active");
+      }
+      function showSection(sectionId) {
+        document.querySelectorAll(".app-section").forEach((s) => s.classList.remove("active"));
+        document.getElementById(sectionId).classList.add("active");
+      }
+
+      function escHtml(s) {
+        return String(s ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function setPills(hostelName) {
+        document.getElementById("add-hostel-pill").textContent = hostelName;
+        document.getElementById("details-hostel-pill").textContent = hostelName;
+        document.getElementById("delete-hostel-pill").textContent = hostelName;
+        document.getElementById("ac-hostel-pill").textContent = hostelName;
+        document.getElementById("nonac-hostel-pill").textContent = hostelName;
+        document.getElementById("roomwise-hostel-pill").textContent = hostelName;
+
+        document.getElementById("oldstudents-hostel-pill").textContent = hostelName;
+        document.getElementById("attendance-hostel-pill").textContent = hostelName;
+        document.getElementById("room-eb-hostel-pill").textContent = hostelName;
+      }
+
+      loginForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const username = document.getElementById("login-username").value.trim();
+        const password = document.getElementById("login-password").value.trim();
+
+        const hostel = HOSTELS.find((h) => h.username === username && h.password === password);
+        if (!hostel) {
+          loginError.textContent = "Invalid username or password.";
+          return;
+        }
+
+        loginError.textContent = "";
+        currentHostelCode = hostel.code;
+        currentHostelName = hostel.name;
+
+        topHostelName.textContent = hostel.name;
+        topHostelCode.textContent = hostel.code.toUpperCase();
+
+        setPills(hostel.name);
+
+        showView("app-view");
+        showSection("home-section");
+      });
+
+      logoutBtn.addEventListener("click", () => {
+        currentHostelCode = null;
+        currentHostelName = null;
+        currentStudent = null;
+        editingStudentId = null;
+        editingFoodId = null;
+        editingMonthlyId = null;
+        editingAttendanceId = null;
+
+        lastSectionBeforeStudent = "details-section";
+        lastSectionBeforeMonthly = "student-section";
+        roomEbLastDate = "";
+        roomEbLastRoom = "";
+
+        loginForm.reset();
+        showView("login-view");
+      });
+
+      // ---------- ADD / EDIT HOSTELER ----------
+      const sharingSelect = document.getElementById("add-sharing");
+      const acTypeSelect = document.getElementById("add-ac-type");
+      const addForm = document.getElementById("add-form");
+      const addMsg = document.getElementById("add-msg");
+      const btnAddBack = document.getElementById("btn-add-back");
+      const addTitle = document.getElementById("add-title");
+
+      function updateAcTypeForSharing() {
+        const v = sharingSelect.value;
+        if (v === "6" || v === "8" || v === "10") {
+          acTypeSelect.value = "Non-AC";
+          acTypeSelect.disabled = true;
+        } else {
+          acTypeSelect.disabled = false;
+        }
+      }
+      sharingSelect.addEventListener("change", updateAcTypeForSharing);
+
+      function resetAddFormToNew() {
+        addForm.reset();
+        editingStudentId = null;
+        addTitle.textContent = "Add New Hosteler";
+        addMsg.textContent = "";
+        addMsg.className = "";
+        updateAcTypeForSharing();
+        document.getElementById("add-photo").value = "";
+      }
+
+      // ---------- HOME BUTTONS ----------
+      document.getElementById("btn-home-add").addEventListener("click", () => {
+        resetAddFormToNew(); // ✅ important: prevents “stuck in edit mode”
+        showSection("add-section");
+      });
+      document.getElementById("btn-home-details").addEventListener("click", () => showSection("details-section"));
+      document.getElementById("btn-home-delete").addEventListener("click", () => showSection("delete-section"));
+      document.getElementById("btn-home-ac").addEventListener("click", () => showSection("ac-section"));
+      document.getElementById("btn-home-nonac").addEventListener("click", () => showSection("nonac-section"));
+      document.getElementById("btn-home-roomwise").addEventListener("click", () => showSection("roomwise-section"));
+
+      document.getElementById("btn-home-oldstudents").addEventListener("click", () => {
+        showSection("oldstudents-section");
+        loadOldStudents();
+      });
+
+      document.getElementById("btn-home-attendance").addEventListener("click", () => {
+        showSection("attendance-section");
+        document.getElementById("att-msg").textContent = "";
+        document.getElementById("att-students").innerHTML = "";
+        document.getElementById("attendance-form").reset();
+      });
+
+      document.getElementById("btn-home-room-eb").addEventListener("click", () => {
+        showSection("room-eb-section");
+        document.getElementById("room-eb-msg").textContent = "";
+        document.getElementById("room-eb-table").innerHTML = "";
+        document.getElementById("room-eb-form").reset();
+        roomEbLastDate = "";
+        roomEbLastRoom = "";
+      });
+
+      addForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        addMsg.textContent = "";
+        addMsg.className = "";
+
+        if (!currentHostelCode) {
+          addMsg.textContent = "Please login again.";
+          addMsg.className = "error";
+          return;
+        }
+
+        const sharingVal = sharingSelect.value;
+        const acVal = acTypeSelect.value;
+        let roomType = "";
+        if (sharingVal === "Single") {
+          roomType = "Single " + (acVal || "");
+        } else if (sharingVal) {
+          roomType = sharingVal + "-Sharing " + (acVal || "");
+        }
+
+        const formData = new FormData();
+        formData.append("hostel_code", currentHostelCode);
+        formData.append("name", document.getElementById("add-name").value.trim());
+        formData.append("address", document.getElementById("add-address").value.trim());
+        formData.append("course", document.getElementById("add-course").value.trim());
+        formData.append("phone", document.getElementById("add-phone").value.trim());
+        formData.append("room_number", document.getElementById("add-room").value.trim());
+        formData.append("room_type", roomType.trim());
+        formData.append("food_option", document.getElementById("add-food").value);
+        formData.append("monthly_rent", document.getElementById("add-rent").value || "0");
+        formData.append("advance_paid", document.getElementById("add-advance").value || "0");
+        formData.append("advance_remaining", document.getElementById("add-advance-rem").value || "0");
+        formData.append("date_join", document.getElementById("add-doj").value || "");
+        formData.append("date_leave", document.getElementById("add-dol").value || "");
+
+        const file = document.getElementById("add-photo").files[0];
+        if (file) formData.append("photo", file);
+
+        const isEdit = !!editingStudentId;
+        const url = isEdit ? `/api/students/${editingStudentId}` : "/api/students";
+        const method = isEdit ? "PUT" : "POST";
+
+        try {
+          const res = await fetch(url, { method, body: formData });
+          const data = await res.json();
+          if (!data.success) {
+            addMsg.textContent = data.message || (isEdit ? "Error updating hosteler." : "Error saving hosteler.");
+            addMsg.className = "error";
+            return;
+          }
+
+          if (isEdit) {
+            addMsg.textContent = "Hosteler updated successfully.";
+            addMsg.className = "success";
+
+            try {
+              const resStu = await fetch(`/api/students/${editingStudentId}`);
+              const stuData = await resStu.json();
+              if (stuData.success) {
+                currentStudent = stuData.student;
+                renderStudentProfile();
+              }
+            } catch (err2) {
+              console.error(err2);
+            }
+
+            editingStudentId = null;
+            addTitle.textContent = "Add New Hosteler";
+            showSection("student-section");
+          } else {
+            resetAddFormToNew();
+            addMsg.textContent = "Hosteler saved successfully.";
+            addMsg.className = "success";
+          }
+        } catch (err) {
+          console.error(err);
+          addMsg.textContent = "Network error.";
+          addMsg.className = "error";
+        }
+      });
+
+      btnAddBack.addEventListener("click", () => {
+        resetAddFormToNew();
+        showSection("home-section");
+      });
+
+      // ---------- HOSTELER DETAILS ----------
+      const detailsSearchForm = document.getElementById("details-search-form");
+      const detailsSearchName = document.getElementById("details-search-name");
+      const detailsSearchMsg = document.getElementById("details-search-msg");
+      const btnViewAll = document.getElementById("btn-view-all");
+      const btnDetailsBack = document.getElementById("btn-details-back");
+      const allStudentsContainer = document.getElementById("all-students-container");
+
+      detailsSearchForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        detailsSearchMsg.textContent = "";
+        detailsSearchMsg.className = "";
+
+        if (!currentHostelCode) {
+          detailsSearchMsg.textContent = "Please login again.";
+          detailsSearchMsg.className = "error";
+          return;
+        }
+
+        const name = detailsSearchName.value.trim();
+        if (!name) {
+          detailsSearchMsg.textContent = "Enter a student name.";
+          detailsSearchMsg.className = "error";
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            `/api/students?hostel=${encodeURIComponent(currentHostelCode)}&name=${encodeURIComponent(name)}`
+          );
+          const data = await res.json();
+          if (!data.success) {
+            detailsSearchMsg.textContent = data.message || "Student not found.";
+            detailsSearchMsg.className = "error";
+            return;
+          }
+          lastSectionBeforeStudent = "details-section";
+          currentStudent = data.student;
+          renderStudentProfile();
+          showSection("student-section");
+        } catch (err) {
+          console.error(err);
+          detailsSearchMsg.textContent = "Network error.";
+          detailsSearchMsg.className = "error";
+        }
+      });
+
+      btnViewAll.addEventListener("click", async () => {
+        allStudentsContainer.innerHTML = "";
+        if (!currentHostelCode) {
+          allStudentsContainer.innerHTML = '<p class="error">Please login again.</p>';
+          return;
+        }
+        allStudentsContainer.innerHTML = '<p class="muted">Loading...</p>';
+
+        try {
+          const res = await fetch(`/api/students/list?hostel=${encodeURIComponent(currentHostelCode)}`);
+          const data = await res.json();
+          if (!data.success) {
+            allStudentsContainer.innerHTML = '<p class="error">Error fetching students.</p>';
+            return;
+          }
+
+          const students = data.students || [];
+          if (students.length === 0) {
+            allStudentsContainer.innerHTML = '<p class="muted">No students yet.</p>';
+            return;
+          }
+
+          let html =
+            "<table><thead><tr><th>Name</th><th>Room</th><th>Action</th></tr></thead><tbody>";
+          for (const s of students) {
+            html += `<tr>
+              <td>${escHtml(s.name)}</td>
+              <td>${escHtml(s.room_number || "")}</td>
+              <td class="table-actions">
+                <button type="button" class="view-student" data-id="${s.id}">View</button>
+                <button type="button" class="edit-student secondary" data-id="${s.id}">Edit</button>
+              </td>
+            </tr>`;
+          }
+          html += "</tbody></table>";
+          allStudentsContainer.innerHTML = html;
+        } catch (err) {
+          console.error(err);
+          allStudentsContainer.innerHTML = '<p class="error">Network error.</p>';
+        }
+      });
+
+      allStudentsContainer.addEventListener("click", async (e) => {
+        const viewBtn = e.target.closest(".view-student");
+        const editBtn = e.target.closest(".edit-student");
+
+        if (viewBtn) {
+          const id = Number(viewBtn.dataset.id);
+          await openStudentById(id, "details-section");
+        }
+
+        if (editBtn) {
+          const id = Number(editBtn.dataset.id);
+          await openEditStudentById(id);
+        }
+      });
+
+      btnDetailsBack.addEventListener("click", () => {
+        detailsSearchForm.reset();
+        detailsSearchMsg.textContent = "";
+        allStudentsContainer.innerHTML = "";
+        showSection("home-section");
+      });
+
+      // ---------- DELETE HOSTELER ----------
+      const deleteForm = document.getElementById("delete-form");
+      const deleteNameInput = document.getElementById("delete-name");
+      const deleteMsg = document.getElementById("delete-msg");
+
+      deleteForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        deleteMsg.textContent = "";
+        deleteMsg.className = "";
+
+        if (!currentHostelCode) {
+          deleteMsg.textContent = "Please login again.";
+          deleteMsg.className = "error";
+          return;
+        }
+
+        const name = deleteNameInput.value.trim();
+        if (!name) {
+          deleteMsg.textContent = "Enter a student name.";
+          deleteMsg.className = "error";
+          return;
+        }
+
+        try {
+          const resFind = await fetch(
+            `/api/students?hostel=${encodeURIComponent(currentHostelCode)}&name=${encodeURIComponent(name)}`
+          );
+          const dataFind = await resFind.json();
+          if (!dataFind.success) {
+            deleteMsg.textContent = dataFind.message || "Student not found.";
+            deleteMsg.className = "error";
+            return;
+          }
+
+          const stu = dataFind.student;
+          const ok = confirm(`Delete student "${stu.name}" from ${currentHostelName}?\n(Will move to Old Students)`);
+          if (!ok) return;
+
+          const resDel = await fetch(`/api/students/${stu.id}`, { method: "DELETE" });
+          const dataDel = await resDel.json();
+          if (!dataDel.success) {
+            deleteMsg.textContent = dataDel.message || "Error deleting student.";
+            deleteMsg.className = "error";
+            return;
+          }
+
+          deleteMsg.textContent = "Student deleted (moved to Old Students).";
+          deleteMsg.className = "success";
+          deleteForm.reset();
+        } catch (err) {
+          console.error(err);
+          deleteMsg.textContent = "Network error.";
+          deleteMsg.className = "error";
+        }
+      });
+
+      document.getElementById("btn-delete-back").addEventListener("click", () => {
+        deleteForm.reset();
+        deleteMsg.textContent = "";
+        showSection("home-section");
+      });
+
+      // ---------- AC / NON-AC HOSTELERS ----------
+      const acNames = document.getElementById("ac-names");
+      const nonacNames = document.getElementById("nonac-names");
+
+      document.querySelectorAll(".ac-btn").forEach((btn) => {
+        btn.addEventListener("click", () => loadRoomTypeList(btn.dataset.type, acNames, "ac-section"));
+      });
+      document.querySelectorAll(".nonac-btn").forEach((btn) => {
+        btn.addEventListener("click", () => loadRoomTypeList(btn.dataset.type, nonacNames, "nonac-section"));
+      });
+
+      async function loadRoomTypeList(roomType, container, backSection) {
+        container.innerHTML = "";
+        if (!currentHostelCode) {
+          container.innerHTML = '<p class="error">Please login again.</p>';
+          return;
+        }
+        container.innerHTML = '<p class="muted">Loading...</p>';
+
+        try {
+          const res = await fetch(
+            `/api/students/by-roomtype?hostel=${encodeURIComponent(currentHostelCode)}&roomType=${encodeURIComponent(roomType)}`
+          );
+          const data = await res.json();
+          if (!data.success) {
+            container.innerHTML = '<p class="error">Error fetching list.</p>';
+            return;
+          }
+          const list = data.students || [];
+          if (list.length === 0) {
+            container.innerHTML = '<p class="muted">No students in this category.</p>';
+            return;
+          }
+
+          let html =
+            `<p class="muted" style="margin-bottom:6px;"><b>${escHtml(roomType)}</b></p>` +
+            `<table><thead><tr><th>Name</th><th>Room</th><th>Action</th></tr></thead><tbody>`;
+
+          for (const s of list) {
+            html += `<tr>
+              <td>${escHtml(s.name)}</td>
+              <td>${escHtml(s.room_number || "")}</td>
+              <td class="table-actions">
+                <button type="button" class="view-student" data-id="${s.id}" data-back="${backSection}">View</button>
+                <button type="button" class="edit-student secondary" data-id="${s.id}">Edit</button>
+              </td>
+            </tr>`;
+          }
+          html += `</tbody></table>`;
+          container.innerHTML = html;
+        } catch (err) {
+          console.error(err);
+          container.innerHTML = '<p class="error">Network error.</p>';
+        }
+      }
+
+      [acNames, nonacNames].forEach((box) => {
+        box.addEventListener("click", async (e) => {
+          const viewBtn = e.target.closest(".view-student");
+          const editBtn = e.target.closest(".edit-student");
+          if (viewBtn) {
+            const id = Number(viewBtn.dataset.id);
+            const back = viewBtn.dataset.back || "home-section";
+            await openStudentById(id, back);
+          }
+          if (editBtn) {
+            const id = Number(editBtn.dataset.id);
+            await openEditStudentById(id);
+          }
+        });
+      });
+
+      document.getElementById("btn-ac-back").addEventListener("click", () => showSection("home-section"));
+      document.getElementById("btn-nonac-back").addEventListener("click", () => showSection("home-section"));
+
+      // ---------- ROOM-WISE HOSTELERS ----------
+      const roomwiseForm = document.getElementById("roomwise-form");
+      const roomwiseRoom = document.getElementById("roomwise-room");
+      const roomwiseMsg = document.getElementById("roomwise-msg");
+      const roomwiseNames = document.getElementById("roomwise-names");
+
+      roomwiseForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        roomwiseMsg.textContent = "";
+        roomwiseMsg.className = "";
+        roomwiseNames.innerHTML = "";
+
+        if (!currentHostelCode) {
+          roomwiseMsg.textContent = "Please login again.";
+          roomwiseMsg.className = "error";
+          return;
+        }
+
+        const room = roomwiseRoom.value.trim();
+        if (!room) {
+          roomwiseMsg.textContent = "Enter a room number.";
+          roomwiseMsg.className = "error";
+          return;
+        }
+
+        roomwiseNames.innerHTML = '<p class="muted">Loading...</p>';
+
+        try {
+          const res = await fetch(
+            `/api/students/by-room?hostel=${encodeURIComponent(currentHostelCode)}&room=${encodeURIComponent(room)}`
+          );
+          const data = await res.json();
+          if (!data.success) {
+            roomwiseNames.innerHTML = '<p class="error">Error fetching list.</p>';
+            return;
+          }
+          const list = data.students || [];
+          if (list.length === 0) {
+            roomwiseNames.innerHTML = '<p class="muted">No students in this room.</p>';
+            return;
+          }
+
+          let html =
+            `<p class="muted" style="margin-bottom:6px;"><b>Room ${escHtml(room)}</b></p>` +
+            `<table><thead><tr><th>Name</th><th>Room Type</th><th>Action</th></tr></thead><tbody>`;
+
+          for (const s of list) {
+            html += `<tr>
+              <td>${escHtml(s.name)}</td>
+              <td>${escHtml(s.room_type || "")}</td>
+              <td class="table-actions">
+                <button type="button" class="view-student" data-id="${s.id}" data-back="roomwise-section">View</button>
+                <button type="button" class="edit-student secondary" data-id="${s.id}">Edit</button>
+              </td>
+            </tr>`;
+          }
+          html += `</tbody></table>`;
+          roomwiseNames.innerHTML = html;
+        } catch (err) {
+          console.error(err);
+          roomwiseNames.innerHTML = '<p class="error">Network error.</p>';
+        }
+      });
+
+      roomwiseNames.addEventListener("click", async (e) => {
+        const viewBtn = e.target.closest(".view-student");
+        const editBtn = e.target.closest(".edit-student");
+        if (viewBtn) {
+          const id = Number(viewBtn.dataset.id);
+          await openStudentById(id, "roomwise-section");
+        }
+        if (editBtn) {
+          const id = Number(editBtn.dataset.id);
+          await openEditStudentById(id);
+        }
+      });
+
+      document.getElementById("btn-roomwise-back").addEventListener("click", () => {
+        roomwiseForm.reset();
+        roomwiseMsg.textContent = "";
+        roomwiseNames.innerHTML = "";
+        showSection("home-section");
+      });
+
+      // ---------- STUDENT PROFILE ----------
+      const studentTitle = document.getElementById("student-title");
+      const studentSub = document.getElementById("student-sub");
+      const studentPhoto = document.getElementById("student-photo");
+      const studentInfo = document.getElementById("student-info");
+
+      const btnStudentMonthly = document.getElementById("btn-student-monthly");
+      const btnStudentExtra = document.getElementById("btn-student-extra");
+      const btnStudentAttendance = document.getElementById("btn-student-attendance");
+      const btnStudentBack = document.getElementById("btn-student-back");
+      const btnStudentEdit = document.getElementById("btn-student-edit");
+
+      function renderStudentProfile() {
+        if (!currentStudent) return;
+        studentTitle.textContent = currentStudent.name || "Student Details";
+        studentSub.textContent = `Room ${currentStudent.room_number || ""} • ${currentStudent.room_type || ""}`;
+
+        if (currentStudent.photo_path) {
+          studentPhoto.innerHTML = `<img src="${escHtml(currentStudent.photo_path)}" alt="Photo of ${escHtml(currentStudent.name)}" />`;
+        } else {
+          const initial = (currentStudent.name || "?").charAt(0).toUpperCase();
+          studentPhoto.innerHTML = `<div class="photo-placeholder">${escHtml(initial)}</div>`;
+        }
+
+        const monthly = currentStudent.monthly_rent || 0;
+        const advPaid = currentStudent.advance_paid || 0;
+        const advRem = currentStudent.advance_remaining || 0;
+
+        studentInfo.innerHTML = `
+          <p><span class="info-label">Hostel:</span> ${escHtml(currentHostelName || currentStudent.hostel_code)}</p>
+          <p><span class="info-label">Room No:</span> ${escHtml(currentStudent.room_number || "")}</p>
+          <p><span class="info-label">Room Type:</span> ${escHtml(currentStudent.room_type || "")}</p>
+          <p><span class="info-label">Food:</span> ${escHtml(currentStudent.food_option || "")}</p>
+          <p><span class="info-label">Monthly Rent:</span> ₹${escHtml(monthly)}</p>
+          <p><span class="info-label">Advance Paid:</span> ₹${escHtml(advPaid)}</p>
+          <p><span class="info-label">Advance Remaining:</span> ₹${escHtml(advRem)}</p>
+          <hr class="dashed" />
+          <p><span class="info-label">Course:</span> ${escHtml(currentStudent.course || "")}</p>
+          <p><span class="info-label">Phone:</span> ${escHtml(currentStudent.phone || "")}</p>
+          <p><span class="info-label">Address:</span> ${escHtml(currentStudent.address || "")}</p>
+          <p><span class="info-label">Date of Joining:</span> ${escHtml(currentStudent.date_join || "")}</p>
+          <p><span class="info-label">Date of Leaving:</span> ${escHtml(currentStudent.date_leave || "")}</p>
+        `;
+      }
+
+      btnStudentBack.addEventListener("click", () => {
+        showSection(lastSectionBeforeStudent || "details-section");
+      });
+
+      btnStudentExtra.addEventListener("click", () => {
+        if (!currentStudent) return alert("No student selected.");
+        document.getElementById("food-sub").textContent = `For ${currentStudent.name} • Room ${currentStudent.room_number || ""}`;
+        document.getElementById("food-msg").textContent = "";
+        document.getElementById("food-history").innerHTML = "";
+        document.getElementById("food-form").reset();
+        editingFoodId = null;
+        showSection("food-section");
+      });
+
+      btnStudentMonthly.addEventListener("click", () => {
+        if (!currentStudent) return alert("No student selected.");
+        lastSectionBeforeMonthly = "student-section"; // ✅ back goes to student profile
+        document.getElementById("monthly-sub").textContent = `For ${currentStudent.name} • Room ${currentStudent.room_number || ""}`;
+        document.getElementById("monthly-msg").textContent = "";
+        document.getElementById("monthly-history").innerHTML = "";
+        document.getElementById("monthly-form").reset();
+        editingMonthlyId = null;
+        showSection("monthly-section");
+      });
+
+      btnStudentAttendance.addEventListener("click", async () => {
+        if (!currentStudent) return alert("No student selected.");
+        document.getElementById("student-att-sub").textContent = `For ${currentStudent.name} • Room ${currentStudent.room_number || ""}`;
+        await loadStudentAttendance();
+        showSection("student-attendance-section");
+      });
+
+      btnStudentEdit.addEventListener("click", () => {
+        if (!currentStudent) return alert("No student selected.");
+        openEditStudentFromCurrent();
+      });
+
+      async function openStudentById(id, backSection) {
+        try {
+          const res = await fetch(`/api/students/${id}`);
+          const data = await res.json();
+          if (!data.success) return alert(data.message || "Student not found.");
+          lastSectionBeforeStudent = backSection || "details-section";
+          currentStudent = data.student;
+          renderStudentProfile();
+          showSection("student-section");
+        } catch (err) {
+          console.error(err);
+          alert("Network error.");
+        }
+      }
+
+      async function openEditStudentById(id) {
+        try {
+          const res = await fetch(`/api/students/${id}`);
+          const data = await res.json();
+          if (!data.success) return alert(data.message || "Student not found.");
+          currentStudent = data.student;
+          openEditStudentFromCurrent();
+        } catch (err) {
+          console.error(err);
+          alert("Network error.");
+        }
+      }
+
+      function openEditStudentFromCurrent() {
+        editingStudentId = currentStudent.id;
+        addTitle.textContent = "Edit Hosteler";
+
+        document.getElementById("add-name").value = currentStudent.name || "";
+        document.getElementById("add-phone").value = currentStudent.phone || "";
+        document.getElementById("add-course").value = currentStudent.course || "";
+        document.getElementById("add-address").value = currentStudent.address || "";
+        document.getElementById("add-room").value = currentStudent.room_number || "";
+        document.getElementById("add-food").value = currentStudent.food_option || "";
+        document.getElementById("add-rent").value = currentStudent.monthly_rent || "";
+        document.getElementById("add-advance").value = currentStudent.advance_paid || "";
+        document.getElementById("add-advance-rem").value = currentStudent.advance_remaining || "";
+        document.getElementById("add-doj").value = currentStudent.date_join || "";
+        document.getElementById("add-dol").value = currentStudent.date_leave || "";
+        document.getElementById("add-photo").value = "";
+
+        const rt = (currentStudent.room_type || "").toLowerCase();
+
+        if (rt.startsWith("single")) sharingSelect.value = "Single";
+        else if (rt.includes("10-sharing")) sharingSelect.value = "10";
+        else if (rt.includes("8-sharing")) sharingSelect.value = "8";
+        else if (rt.includes("6-sharing")) sharingSelect.value = "6";
+        else if (rt.includes("4-sharing")) sharingSelect.value = "4";
+        else if (rt.includes("3-sharing")) sharingSelect.value = "3";
+        else if (rt.includes("2-sharing")) sharingSelect.value = "2";
+        else sharingSelect.value = "";
+
+        if (rt.includes("non-ac")) acTypeSelect.value = "Non-AC";
+        else if (rt.includes("ac")) acTypeSelect.value = "AC";
+        else acTypeSelect.value = "";
+
+        updateAcTypeForSharing();
+        addMsg.textContent = "";
+        showSection("add-section");
+      }
+
+      // ---------- EXTRA FOOD ----------
+      const foodForm = document.getElementById("food-form");
+      const foodMsg = document.getElementById("food-msg");
+      const foodHistory = document.getElementById("food-history");
+
+      foodForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        foodMsg.textContent = "";
+        foodMsg.className = "";
+
+        if (!currentStudent) {
+          foodMsg.textContent = "No student selected.";
+          foodMsg.className = "error";
+          return;
+        }
+
+        const payload = {
+          date: document.getElementById("food-date").value || "",
+          amount: document.getElementById("food-amount").value || "0",
+          remaining: document.getElementById("food-remaining").value || "0",
+        };
+
+        const isEdit = !!editingFoodId;
+        const url = isEdit ? `/api/extra_food/${editingFoodId}` : `/api/students/${currentStudent.id}/extra-food`;
+        const method = isEdit ? "PUT" : "POST";
+
+        try {
+          const res = await fetch(url, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+          if (!data.success) {
+            foodMsg.textContent = data.message || "Error saving entry.";
+            foodMsg.className = "error";
+            return;
+          }
+
+          foodMsg.textContent = isEdit ? "Extra food entry updated." : "Extra food entry added.";
+          foodMsg.className = "success";
+
+          foodForm.reset();
+          editingFoodId = null;
+          loadFoodHistory();
+        } catch (err) {
+          console.error(err);
+          foodMsg.textContent = "Network error.";
+          foodMsg.className = "error";
+        }
+      });
+
+      document.getElementById("btn-food-history").addEventListener("click", () => loadFoodHistory());
+      document.getElementById("btn-food-back").addEventListener("click", () => showSection("student-section"));
+
+      async function loadFoodHistory() {
+        foodHistory.innerHTML = "";
+        if (!currentStudent) {
+          foodHistory.innerHTML = '<p class="error">No student selected.</p>';
+          return;
+        }
+        foodHistory.innerHTML = '<p class="muted">Loading...</p>';
+
+        try {
+          const res = await fetch(`/api/students/${currentStudent.id}/extra-food`);
+          const data = await res.json();
+          if (!data.success) {
+            foodHistory.innerHTML = '<p class="error">Error loading history.</p>';
+            return;
+          }
+
+          const entries = data.entries || [];
+          if (entries.length === 0) {
+            foodHistory.innerHTML = '<p class="muted">No extra food entries yet.</p>';
+            return;
+          }
+
+          let html =
+            "<table><thead><tr><th>Date</th><th>Amount</th><th>Remaining</th><th>Action</th></tr></thead><tbody>";
+          for (const r of entries) {
+            html += `<tr>
+              <td>${escHtml(r.date || "")}</td>
+              <td>₹${escHtml(r.amount || 0)}</td>
+              <td>₹${escHtml(r.remaining || 0)}</td>
+              <td class="table-actions">
+                <button type="button"
+                  class="food-edit"
+                  data-id="${r.id}"
+                  data-date="${escHtml(r.date || "")}"
+                  data-amount="${escHtml(r.amount || 0)}"
+                  data-remaining="${escHtml(r.remaining || 0)}"
+                >Edit</button>
+
+                <button type="button"
+                  class="food-del danger"
+                  data-id="${r.id}"
+                >Delete</button>
+              </td>
+            </tr>`;
+          }
+          html += "</tbody></table>";
+          foodHistory.innerHTML = html;
+        } catch (err) {
+          console.error(err);
+          foodHistory.innerHTML = '<p class="error">Network error.</p>';
+        }
+      }
+
+      foodHistory.addEventListener("click", async (e) => {
+        const editBtn = e.target.closest(".food-edit");
+        const delBtn = e.target.closest(".food-del");
+
+        if (editBtn) {
+          editingFoodId = editBtn.dataset.id;
+          document.getElementById("food-date").value = editBtn.dataset.date || "";
+          document.getElementById("food-amount").value = editBtn.dataset.amount || "0";
+          document.getElementById("food-remaining").value = editBtn.dataset.remaining || "0";
+          foodMsg.textContent = "Editing extra food entry. Change values and click Add / Update to save.";
+          foodMsg.className = "sub-text";
+        }
+
+        if (delBtn) {
+          const id = delBtn.dataset.id;
+          const ok = confirm("Delete this extra food entry?");
+          if (!ok) return;
+
+          try {
+            const res = await fetch(`/api/extra_food/${id}`, { method: "DELETE" });
+            const data = await res.json();
+            if (!data.success) {
+              alert(data.message || "Delete failed.");
+              return;
+            }
+            foodMsg.textContent = "Extra food entry deleted.";
+            foodMsg.className = "success";
+            loadFoodHistory();
+          } catch (err) {
+            console.error(err);
+            alert("Network error.");
+          }
+        }
+      });
+
+      // ---------- ✅ MONTHLY RENT / EB (STUDENT) ----------
+      const monthlyForm = document.getElementById("monthly-form");
+      const monthlyMsg = document.getElementById("monthly-msg");
+      const monthlyHistory = document.getElementById("monthly-history");
+
+      monthlyForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        monthlyMsg.textContent = "";
+        monthlyMsg.className = "";
+
+        if (!currentStudent) {
+          monthlyMsg.textContent = "No student selected.";
+          monthlyMsg.className = "error";
+          return;
+        }
+
+        const payload = {
+          hostel_code: currentHostelCode,
+          date: document.getElementById("monthly-date").value || "",
+          room_number: currentStudent.room_number || "",
+          rent_paid: document.getElementById("monthly-rent-paid").value || "0",
+          rent_remaining: document.getElementById("monthly-rent-rem").value || "0",
+          eb_share: document.getElementById("monthly-eb-share").value || "0",
+          eb_paid: document.getElementById("monthly-eb-paid").value || "0",
+          eb_remaining: document.getElementById("monthly-eb-rem").value || "0",
+        };
+
+        const isEdit = !!editingMonthlyId;
+        const url = isEdit ? `/api/monthly_accounts/${editingMonthlyId}` : `/api/students/${currentStudent.id}/monthly-account`;
+        const method = isEdit ? "PUT" : "POST";
+
+        try {
+          const res = await fetch(url, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+          if (!data.success) {
+            monthlyMsg.textContent = data.message || "Error saving entry.";
+            monthlyMsg.className = "error";
+            return;
+          }
+
+          monthlyMsg.textContent = isEdit ? "Monthly entry updated." : "Monthly entry added.";
+          monthlyMsg.className = "success";
+
+          monthlyForm.reset();
+          editingMonthlyId = null;
+          loadMonthlyHistory();
+        } catch (err) {
+          console.error(err);
+          monthlyMsg.textContent = "Network error.";
+          monthlyMsg.className = "error";
+        }
+      });
+
+      document.getElementById("btn-monthly-history").addEventListener("click", () => loadMonthlyHistory());
+
+      // ✅ UPDATED: back should go to wherever monthly opened from
+      document.getElementById("btn-monthly-back").addEventListener("click", () => {
+        showSection(lastSectionBeforeMonthly || "student-section");
+      });
+
+      async function loadMonthlyHistory() {
+        monthlyHistory.innerHTML = "";
+        if (!currentStudent) {
+          monthlyHistory.innerHTML = '<p class="error">No student selected.</p>';
+          return;
+        }
+        monthlyHistory.innerHTML = '<p class="muted">Loading...</p>';
+
+        try {
+          const res = await fetch(`/api/students/${currentStudent.id}/monthly-account`);
+          const data = await res.json();
+          if (!data.success) {
+            monthlyHistory.innerHTML = '<p class="error">Error loading history.</p>';
+            return;
+          }
+
+          const entries = data.entries || [];
+          if (entries.length === 0) {
+            monthlyHistory.innerHTML = '<p class="muted">No monthly entries yet.</p>';
+            return;
+          }
+
+          let html =
+            "<table><thead><tr>" +
+            "<th>Date</th><th>Rent Paid</th><th>Rent Rem</th><th>EB</th><th>EB Paid</th><th>EB Rem</th><th>Action</th>" +
+            "</tr></thead><tbody>";
+
+          for (const r of entries) {
+            html += `<tr>
+              <td>${escHtml(r.date || "")}</td>
+              <td>₹${escHtml(r.rent_paid || 0)}</td>
+              <td>₹${escHtml(r.rent_remaining || 0)}</td>
+              <td>₹${escHtml(r.eb_share || 0)}</td>
+              <td>₹${escHtml(r.eb_paid || 0)}</td>
+              <td>₹${escHtml(r.eb_remaining || 0)}</td>
+              <td class="table-actions">
+                <button type="button"
+                  class="monthly-edit"
+                  data-id="${r.id}"
+                  data-date="${escHtml(r.date || "")}"
+                  data-rentpaid="${escHtml(r.rent_paid || 0)}"
+                  data-rentrem="${escHtml(r.rent_remaining || 0)}"
+                  data-eb="${escHtml(r.eb_share || 0)}"
+                  data-ebpaid="${escHtml(r.eb_paid || 0)}"
+                  data-ebrem="${escHtml(r.eb_remaining || 0)}"
+                >Edit</button>
+
+                <button type="button"
+                  class="monthly-del danger"
+                  data-id="${r.id}"
+                >Delete</button>
+              </td>
+            </tr>`;
+          }
+          html += "</tbody></table>";
+          monthlyHistory.innerHTML = html;
+        } catch (err) {
+          console.error(err);
+          monthlyHistory.innerHTML = '<p class="error">Network error.</p>';
+        }
+      }
+
+      monthlyHistory.addEventListener("click", async (e) => {
+        const editBtn = e.target.closest(".monthly-edit");
+        const delBtn = e.target.closest(".monthly-del");
+
+        if (editBtn) {
+          editingMonthlyId = editBtn.dataset.id;
+          document.getElementById("monthly-date").value = editBtn.dataset.date || "";
+          document.getElementById("monthly-rent-paid").value = editBtn.dataset.rentpaid || "0";
+          document.getElementById("monthly-rent-rem").value = editBtn.dataset.rentrem || "0";
+          document.getElementById("monthly-eb-share").value = editBtn.dataset.eb || "0";
+          document.getElementById("monthly-eb-paid").value = editBtn.dataset.ebpaid || "0";
+          document.getElementById("monthly-eb-rem").value = editBtn.dataset.ebrem || "0";
+          monthlyMsg.textContent = "Editing monthly entry. Change values and click Add / Update to save.";
+          monthlyMsg.className = "sub-text";
+        }
+
+        if (delBtn) {
+          const id = delBtn.dataset.id;
+          const ok = confirm("Delete this monthly entry?");
+          if (!ok) return;
+
+          try {
+            const res = await fetch(`/api/monthly_accounts/${id}`, { method: "DELETE" });
+            const data = await res.json();
+            if (!data.success) {
+              alert(data.message || "Delete failed.");
+              return;
+            }
+            monthlyMsg.textContent = "Monthly entry deleted.";
+            monthlyMsg.className = "success";
+            loadMonthlyHistory();
+          } catch (err) {
+            console.error(err);
+            alert("Network error.");
+          }
+        }
+      });
+
+      // ✅ NEW: helper to open monthly page directly from room-eb list, with date auto-filled + existing values loaded
+      async function openMonthlyDirectForStudent(studentId, selectedDate) {
+        try {
+          // load student
+          const resStu = await fetch(`/api/students/${studentId}`);
+          const stuData = await resStu.json();
+          if (!stuData.success) return alert(stuData.message || "Student not found.");
+
+          currentStudent = stuData.student;
+
+          // set monthly page header + clear form
+          document.getElementById("monthly-sub").textContent = `For ${currentStudent.name} • Room ${currentStudent.room_number || ""}`;
+          monthlyMsg.textContent = "";
+          monthlyHistory.innerHTML = "";
+          monthlyForm.reset();
+          editingMonthlyId = null;
+
+          // ✅ date auto-connect from room-eb date
+          document.getElementById("monthly-date").value = selectedDate || "";
+
+          // ✅ back should return to room-eb section (not student profile)
+          lastSectionBeforeMonthly = "room-eb-section";
+
+          // Try to auto-fill fields from DB row for that date (so EB share is already there)
+          try {
+            const resHist = await fetch(`/api/students/${studentId}/monthly-account`);
+            const histData = await resHist.json();
+            if (histData.success) {
+              const list = histData.entries || [];
+              const row = list.find((x) => String(x.date || "") === String(selectedDate || ""));
+              if (row) {
+                // if row exists, we are editing that row
+                editingMonthlyId = row.id;
+
+                document.getElementById("monthly-rent-paid").value = row.rent_paid ?? 0;
+                document.getElementById("monthly-rent-rem").value = row.rent_remaining ?? 0;
+                document.getElementById("monthly-eb-share").value = row.eb_share ?? 0;
+                document.getElementById("monthly-eb-paid").value = row.eb_paid ?? 0;
+                document.getElementById("monthly-eb-rem").value = row.eb_remaining ?? 0;
+
+                monthlyMsg.textContent = "Loaded details for selected date. Update values and click Add / Update.";
+                monthlyMsg.className = "sub-text";
+              } else {
+                // no row for date -> still keep date filled; EB share might be created by batch, but if not, user can enter
+                monthlyMsg.textContent = "Enter values and click Add / Update.";
+                monthlyMsg.className = "sub-text";
+              }
+            }
+          } catch (e) {
+            console.error(e);
+          }
+
+          showSection("monthly-section");
+        } catch (err) {
+          console.error(err);
+          alert("Network error.");
+        }
+      }
+
+      // ---------- ✅ STUDENT ATTENDANCE LIST ----------
+      document.getElementById("btn-student-att-back").addEventListener("click", () => {
+        showSection("student-section");
+      });
+
+      async function loadStudentAttendance() {
+        const box = document.getElementById("student-att-table");
+        box.innerHTML = '<p class="muted">Loading...</p>';
+
+        try {
+          const res = await fetch(`/api/students/${currentStudent.id}/attendance`);
+          const data = await res.json();
+          if (!data.success) {
+            box.innerHTML = '<p class="error">Error loading attendance.</p>';
+            return;
+          }
+
+          const entries = data.entries || [];
+          if (entries.length === 0) {
+            box.innerHTML = '<p class="muted">No attendance marked yet.</p>';
+            return;
+          }
+
+          let html =
+            "<table><thead><tr><th>Date</th><th>Room</th><th>Status</th><th>Action</th></tr></thead><tbody>";
+
+          for (const a of entries) {
+            html += `<tr>
+              <td>${escHtml(a.date || "")}</td>
+              <td>${escHtml(a.room_number || "")}</td>
+              <td>${escHtml(a.status || "")}</td>
+              <td class="table-actions">
+                <button type="button"
+                  class="att-row-edit"
+                  data-id="${a.id}"
+                  data-date="${escHtml(a.date || "")}"
+                  data-room="${escHtml(a.room_number || "")}"
+                  data-status="${escHtml(a.status || "")}"
+                >Edit</button>
+
+                <button type="button"
+                  class="att-row-del danger"
+                  data-id="${a.id}"
+                >Delete</button>
+              </td>
+            </tr>`;
+          }
+          html += "</tbody></table>";
+          box.innerHTML = html;
+        } catch (err) {
+          console.error(err);
+          box.innerHTML = '<p class="error">Network error.</p>';
+        }
+      }
+
+      // ✅ Manual edit & delete attendance row
+      document.getElementById("student-att-table").addEventListener("click", async (e) => {
+        const editBtn = e.target.closest(".att-row-edit");
+        const delBtn = e.target.closest(".att-row-del");
+
+        if (editBtn) {
+          editingAttendanceId = Number(editBtn.dataset.id);
+
+          const newDate = prompt("Edit Date (YYYY-MM-DD):", editBtn.dataset.date || "");
+          if (newDate === null) return;
+
+          const newRoom = prompt("Edit Room Number:", editBtn.dataset.room || "");
+          if (newRoom === null) return;
+
+          const newStatus = prompt("Edit Status (Present/Absent):", editBtn.dataset.status || "");
+          if (newStatus === null) return;
+
+          const statusClean = String(newStatus).trim();
+          if (statusClean !== "Present" && statusClean !== "Absent") {
+            alert("Status must be Present or Absent.");
+            return;
+          }
+
+          try {
+            const res = await fetch(`/api/attendance/${editingAttendanceId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                date: String(newDate).trim(),
+                room_number: String(newRoom).trim(),
+                status: statusClean,
+              }),
+            });
+
+            const data = await res.json();
+            if (!data.success) {
+              alert(data.message || "Update failed.");
+              return;
+            }
+
+            alert("Attendance updated.");
+            editingAttendanceId = null;
+            loadStudentAttendance();
+          } catch (err) {
+            console.error(err);
+            alert("Network error.");
+          }
+        }
+
+        if (delBtn) {
+          const id = Number(delBtn.dataset.id);
+          const ok = confirm("Delete this attendance row?");
+          if (!ok) return;
+
+          try {
+            const res = await fetch(`/api/attendance/${id}`, { method: "DELETE" });
+            const data = await res.json();
+            if (!data.success) return alert(data.message || "Delete failed.");
+            alert("Attendance deleted.");
+            loadStudentAttendance();
+          } catch (err) {
+            console.error(err);
+            alert("Network error.");
+          }
+        }
+      });
+
+      // ---------- ✅ OLD STUDENTS ----------
+      const oldStudentsContainer = document.getElementById("oldstudents-container");
+      document.getElementById("btn-oldstudents-back").addEventListener("click", () => showSection("home-section"));
+      document.getElementById("btn-oldstudents-refresh").addEventListener("click", () => loadOldStudents());
+
+      async function loadOldStudents() {
+        oldStudentsContainer.innerHTML = '<p class="muted">Loading...</p>';
+
+        try {
+          const res = await fetch(`/api/students/old?hostel=${encodeURIComponent(currentHostelCode)}`);
+          const data = await res.json();
+          if (!data.success) {
+            oldStudentsContainer.innerHTML = '<p class="error">Error loading old students.</p>';
+            return;
+          }
+
+          const list = data.students || [];
+          if (list.length === 0) {
+            oldStudentsContainer.innerHTML = '<p class="muted">No old students.</p>';
+            return;
+          }
+
+          let html =
+            "<table><thead><tr><th>Name</th><th>Room</th><th>Deleted At</th><th>Action</th></tr></thead><tbody>";
+          for (const s of list) {
+            html += `<tr>
+              <td>${escHtml(s.name)}</td>
+              <td>${escHtml(s.room_number || "")}</td>
+              <td>${escHtml(s.deleted_at || "")}</td>
+              <td class="table-actions">
+                <button type="button" class="old-view" data-id="${s.id}">View</button>
+                <button type="button" class="old-restore secondary" data-id="${s.id}">Undo</button>
+
+                <!-- ✅ Permanent Delete -->
+                <button type="button" class="old-perm-del danger" data-id="${s.id}">
+                  Permanent Delete
+                </button>
+              </td>
+            </tr>`;
+          }
+          html += "</tbody></table>";
+          oldStudentsContainer.innerHTML = html;
+        } catch (err) {
+          console.error(err);
+          oldStudentsContainer.innerHTML = '<p class="error">Network error.</p>';
+        }
+      }
+
+      oldStudentsContainer.addEventListener("click", async (e) => {
+        const viewBtn = e.target.closest(".old-view");
+        const restoreBtn = e.target.closest(".old-restore");
+        const permDelBtn = e.target.closest(".old-perm-del");
+
+        if (viewBtn) {
+          const id = Number(viewBtn.dataset.id);
+          try {
+            const res = await fetch(`/api/students/${id}?includeDeleted=1`);
+            const data = await res.json();
+            if (!data.success) return alert(data.message || "Student not found.");
+
+            lastSectionBeforeStudent = "oldstudents-section";
+            currentStudent = data.student;
+            renderStudentProfile();
+            showSection("student-section");
+          } catch (err) {
+            console.error(err);
+            alert("Network error.");
+          }
+        }
+
+        if (restoreBtn) {
+          const id = Number(restoreBtn.dataset.id);
+          const ok = confirm("Undo restore this student?");
+          if (!ok) return;
+
+          try {
+            const res = await fetch(`/api/students/${id}/restore`, { method: "POST" });
+            const data = await res.json();
+            if (!data.success) return alert(data.message || "Restore failed.");
+            alert("Student restored successfully.");
+            loadOldStudents();
+          } catch (err) {
+            console.error(err);
+            alert("Network error.");
+          }
+        }
+
+        if (permDelBtn) {
+          const id = Number(permDelBtn.dataset.id);
+
+          const ok1 = confirm("Permanently delete this student?\nThis cannot be undone.");
+          if (!ok1) return;
+
+          const ok2 = confirm("Are you 100% sure?\nAll data will be removed permanently.");
+          if (!ok2) return;
+
+          try {
+            const res = await fetch(`/api/students/${id}/permanent`, { method: "DELETE" });
+            const data = await res.json();
+            if (!data.success) return alert(data.message || "Permanent delete failed.");
+            alert("Student permanently deleted.");
+            loadOldStudents();
+          } catch (err) {
+            console.error(err);
+            alert("Network error.");
+          }
+        }
+      });
+
+      // ---------- ✅ ATTENDANCE (ROOM-WISE) ----------
+      const attMsg = document.getElementById("att-msg");
+      const attStudentsBox = document.getElementById("att-students");
+
+      document.getElementById("btn-att-back").addEventListener("click", () => showSection("home-section"));
+
+      document.getElementById("btn-att-load").addEventListener("click", async () => {
+        attMsg.textContent = "";
+        attMsg.className = "";
+        attStudentsBox.innerHTML = "";
+
+        const date = document.getElementById("att-date").value;
+        const room = document.getElementById("att-room").value.trim();
+
+        if (!date || !room) {
+          attMsg.textContent = "Please enter date and room.";
+          attMsg.className = "error";
+          return;
+        }
+
+        attStudentsBox.innerHTML = '<p class="muted">Loading students...</p>';
+
+        try {
+          const res = await fetch(
+            `/api/students/by-room?hostel=${encodeURIComponent(currentHostelCode)}&room=${encodeURIComponent(room)}`
+          );
+          const data = await res.json();
+          if (!data.success) {
+            attStudentsBox.innerHTML = '<p class="error">Error loading students.</p>';
+            return;
+          }
+          const list = data.students || [];
+          if (list.length === 0) {
+            attStudentsBox.innerHTML = '<p class="muted">No students in this room.</p>';
+            return;
+          }
+
+          let html =
+            `<p class="muted" style="margin-bottom:6px;"><b>Room ${escHtml(room)}</b> — Select absentees only</p>` +
+            `<table><thead><tr><th>Absent?</th><th>Name</th><th>Action</th></tr></thead><tbody>`;
+
+          for (const s of list) {
+            html += `<tr>
+              <td><input type="checkbox" class="att-abs" data-id="${s.id}"/></td>
+              <td>${escHtml(s.name)}</td>
+              <td class="table-actions">
+                <button type="button" class="view-student" data-id="${s.id}" data-back="attendance-section">View</button>
+                <button type="button" class="edit-student secondary" data-id="${s.id}">Edit</button>
+              </td>
+            </tr>`;
+          }
+          html += `</tbody></table>`;
+          attStudentsBox.innerHTML = html;
+        } catch (err) {
+          console.error(err);
+          attStudentsBox.innerHTML = '<p class="error">Network error.</p>';
+        }
+      });
+
+      document.getElementById("attendance-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        attMsg.textContent = "";
+        attMsg.className = "";
+
+        const date = document.getElementById("att-date").value;
+        const room = document.getElementById("att-room").value.trim();
+        if (!date || !room) {
+          attMsg.textContent = "Please enter date and room.";
+          attMsg.className = "error";
+          return;
+        }
+
+        const absentIds = Array.from(document.querySelectorAll(".att-abs"))
+          .filter((cb) => cb.checked)
+          .map((cb) => Number(cb.dataset.id));
+
+        try {
+          const res = await fetch(`/api/rooms/${encodeURIComponent(room)}/attendance`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              hostel_code: currentHostelCode,
+              date,
+              absent_ids: absentIds,
+            }),
+          });
+          const data = await res.json();
+          if (!data.success) {
+            attMsg.textContent = data.message || "Error saving attendance.";
+            attMsg.className = "error";
+            return;
+          }
+          attMsg.textContent = "Attendance submitted successfully.";
+          attMsg.className = "success";
+        } catch (err) {
+          console.error(err);
+          attMsg.textContent = "Network error.";
+          attMsg.className = "error";
+        }
+      });
+
+      attStudentsBox.addEventListener("click", async (e) => {
+        const viewBtn = e.target.closest(".view-student");
+        const editBtn = e.target.closest(".edit-student");
+
+        if (viewBtn) {
+          const id = Number(viewBtn.dataset.id);
+          await openStudentById(id, "attendance-section");
+        }
+        if (editBtn) {
+          const id = Number(editBtn.dataset.id);
+          await openEditStudentById(id);
+        }
+      });
+
+      // ---------- ✅ ROOM-WISE EB (Monthly Rent/EB) ----------
+      const roomEbMsg = document.getElementById("room-eb-msg");
+      const roomEbTable = document.getElementById("room-eb-table");
+
+      document.getElementById("btn-room-eb-back").addEventListener("click", () => showSection("home-section"));
+
+      document.getElementById("room-eb-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        roomEbMsg.textContent = "";
+        roomEbMsg.className = "";
+        roomEbTable.innerHTML = "";
+
+        const date = document.getElementById("room-eb-date").value;
+        const room = document.getElementById("room-eb-room").value.trim();
+        const ebTotal = document.getElementById("room-eb-total").value;
+
+        if (!date || !room || !ebTotal) {
+          roomEbMsg.textContent = "Please fill date, room and EB total.";
+          roomEbMsg.className = "error";
+          return;
+        }
+
+        // ✅ store date + room for auto-connect
+        roomEbLastDate = date;
+        roomEbLastRoom = room;
+
+        try {
+          const res = await fetch(`/api/rooms/${encodeURIComponent(room)}/eb-batch`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              hostel_code: currentHostelCode,
+              date,
+              eb_total: ebTotal,
+            }),
+          });
+          const data = await res.json();
+          if (!data.success) {
+            roomEbMsg.textContent = data.message || "Error saving EB.";
+            roomEbMsg.className = "error";
+            return;
+          }
+
+          roomEbMsg.textContent = `EB saved. Share per student = ₹${data.eb_share}`;
+          roomEbMsg.className = "success";
+
+          // ✅ UPDATED: after submit show only student names + button to open monthly page
+          await loadRoomMonthlyButtons(room, date);
+        } catch (err) {
+          console.error(err);
+          roomEbMsg.textContent = "Network error.";
+          roomEbMsg.className = "error";
+        }
+      });
+
+      // ✅ UPDATED: replaces old big table (Rent/Eb columns) with Names + "Open Monthly" button
+      async function loadRoomMonthlyButtons(room, date) {
+        roomEbTable.innerHTML = '<p class="muted">Loading...</p>';
+
+        try {
+          const res = await fetch(
+            `/api/rooms/${encodeURIComponent(room)}/monthly-account?hostel=${encodeURIComponent(currentHostelCode)}&date=${encodeURIComponent(date)}`
+          );
+          const data = await res.json();
+          if (!data.success) {
+            roomEbTable.innerHTML = '<p class="error">Error loading room students.</p>';
+            return;
+          }
+
+          const entries = data.entries || [];
+          if (entries.length === 0) {
+            roomEbTable.innerHTML = '<p class="muted">No students in this room.</p>';
+            return;
+          }
+
+          let html =
+            `<p class="muted" style="margin-bottom:6px;"><b>Room ${escHtml(room)}</b> — ${escHtml(date)}</p>` +
+            `<table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+          for (const r of entries) {
+            html += `<tr>
+              <td>${escHtml(r.name || "")}</td>
+              <td class="table-actions">
+                <button
+                  type="button"
+                  class="open-monthly"
+                  data-id="${r.student_id}"
+                  data-date="${escHtml(date)}"
+                >Open Monthly Rent / EB</button>
+              </td>
+            </tr>`;
+          }
+
+          html += `</tbody></table>`;
+          roomEbTable.innerHTML = html;
+        } catch (err) {
+          console.error(err);
+          roomEbTable.innerHTML = '<p class="error">Network error.</p>';
+        }
+      }
+
+      roomEbTable.addEventListener("click", async (e) => {
+        const openBtn = e.target.closest(".open-monthly");
+        if (openBtn) {
+          const id = Number(openBtn.dataset.id);
+          const date = String(openBtn.dataset.date || roomEbLastDate || "").trim();
+          if (!date) return alert("Date missing. Please submit EB again.");
+          await openMonthlyDirectForStudent(id, date);
+        }
+      });
+
+      // initial state
+      showView("login-view");
+    </script>
+  </body>
+</html>
