@@ -1,5 +1,9 @@
 node_modules
 npm-debug.log
 .DS_Store
-public/uploads
+
+# don't ship local runtime data to docker image
 hostel.db
+public/uploads
+uploads
+/data
